@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "note": "Macro source of truth for the build. DECLARATIONS ONLY. Progress is DERIVED by the /roadmap skill from each track's statusFile (_STATUS.json) — never hand-write step status here. Humans edit: tracks[], dependsOn, owns, lifecycle, spine, unblockTrigger. The /roadmap skill regenerates ROADMAP.md. This file ships with ONE example track so the build system is runnable out of the box — replace it with your own tracks.",
+  "createdAt": "2025-01-01",
+  "lifecycleValues": ["planned", "active", "blocked", "complete", "archived"],
+  "shared": [],
+  "phases": [
+    { "id": "foundation", "label": "Foundation & Setup", "order": 1 },
+    { "id": "features", "label": "Core Features", "order": 2 },
+    { "id": "polish", "label": "Polish & Launch", "order": 3 }
+  ],
+  "tracks": [
+    {
+      "id": "example-track",
+      "goal": "Example track shipped with this starter so /build, /status, /roadmap, and /verify work immediately. Replace it with a real track (see docs/runbooks/add-a-track.md, or just edit the files under .claude/feature-tracks/example-track/).",
+      "spine": true,
+      "phase": "foundation",
+      "statusFile": ".claude/feature-tracks/example-track/_STATUS.json",
+      "dir": ".claude/feature-tracks/example-track/",
+      "lifecycle": "active",
+      "dependsOn": [],
+      "owns": [],
+      "unblockTrigger": null,
+      "notes": "The single spine track. /build advances whichever track has spine:true. Set spine:true on whatever track is your current top priority; only one track should be the spine at a time."
+    }
+  ]
+}

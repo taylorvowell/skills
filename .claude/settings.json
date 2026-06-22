@@ -1,0 +1,56 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(printenv)",
+      "Bash(printenv:*)",
+      "Bash(env)",
+      "Bash(vercel env pull:*)",
+      "Bash(vercel env pull)"
+    ],
+    "allow": [
+      "mcp__playwright__browser_*",
+      "mcp__playwright-test__browser_*",
+      "mcp__playwright-test__generator_*",
+      "mcp__playwright-test__healer_*",
+      "mcp__playwright-test__planner_*",
+      "mcp__playwright-test__test_*",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "mcp__next-devtools__nextjs_docs",
+      "mcp__next-devtools__nextjs_index"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-protected-paths.mjs"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-secret-exposure.mjs"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/lint-touched-file.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}
