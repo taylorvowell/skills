@@ -1,0 +1,30 @@
+{
+  "_comment": "The secret-safety + lint hooks and the secret-protection deny rules this toolkit relies on. If the target project already has a .claude/settings.json WITHOUT these, MERGE these entries in (don't overwrite). In the normal case the toolkit is already installed and this is just a verification reference. The three hook scripts must exist at .claude/hooks/ for these to run.",
+  "permissions": {
+    "deny": [
+      "Bash(printenv)",
+      "Bash(printenv:*)",
+      "Bash(env)",
+      "Bash(vercel env pull:*)",
+      "Bash(vercel env pull)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/guard-protected-paths.mjs" }]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/guard-secret-exposure.mjs" }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/lint-touched-file.mjs" }]
+      }
+    ]
+  }
+}

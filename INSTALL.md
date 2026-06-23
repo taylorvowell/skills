@@ -48,22 +48,33 @@ Copy `docs/` in alongside `.claude/` — the `docs` and `architect` skills copy 
 ## Install A — a NEW Next.js project
 
 1. Copy `.claude/`, `docs/`, and the root `CLAUDE.md` into your repo root.
-2. Open `CLAUDE.md`, fill in the **Project** section, confirm the **Stack** section matches your choices, and delete the intro quote block.
+2. **Run `/init-claude`.** Claude researches the repo (package manager, framework versions, directory layout, configs, CI, deploy target), fills every **🔧 FILL IN** placeholder in `CLAUDE.md`, reconciles the stack rules with what's actually installed, and asks you about the things code can't reveal (the North Star, ranked priorities, domain rules). Review and tweak the result.
+   - You can also do step 2 by hand: open `CLAUDE.md` and fill the 🔧 sections yourself.
 3. (Optional) Delete the shipped `example-track` once you add real tracks; replace `.claude/ROADMAP.json`'s example track with your own.
 4. Start working. `/roadmap`, `/build`, `/audit`, `/speedtest`, etc. work immediately.
+
+> **The `CLAUDE.md` structure** mirrors a proven layout: a `Project` blurb, a **North Star & Operating Principles — READ FIRST** section (the quality bar + ranked priorities that break ties), `Stack` / `Structure` / `Architecture Flow`, then the hard rules (`TypeScript`, `Tailwind v4 — CRITICAL`, `Components — STRICT RULES`, `CVA`, `Next.js`, `Environment Variables — SAFETY CRITICAL`, `File Safety`, `Performance`, `Testing`, a `Don't` list), a documentation-currency rule, the build-system section, MCP routing, and per-subsystem `Domain Rules`. `/init-claude` keeps that structure and fills it with your project's facts.
 
 You can delete `CLAUDE.add.md` and `INSTALL.md` from the project — they're only needed for distribution.
 
 ## Install B — an EXISTING project
 
 1. Copy `.claude/` (and `docs/` if you don't already have ADR/runbook templates) into your repo root.
-   - **If you already have `.claude/settings.json`:** merge, don't overwrite. Add the `hooks` block and the `permissions.deny` entries from this toolkit's `settings.json` into yours.
-   - **If you already have `.claude/CLAUDE.md`:** keep yours; this toolkit's `.claude/CLAUDE.md` is just working-style preference — copy over only the parts you want.
-2. Open `CLAUDE.add.md`, copy the fenced block into your existing root `CLAUDE.md` (append it). Your project's own rules stay authoritative; this just makes Claude aware of the tooling.
-3. (Optional) Don't want a tracked build? Delete `.claude/ROADMAP.json`, `.claude/feature-tracks/`, `.claude/ai-instructions/`, and the build/track skills + commands. The rest of the skills work standalone.
+   - **If you already have `.claude/settings.json`:** the next step merges it for you; or merge by hand (add this toolkit's `hooks` block and `permissions.deny` entries into yours — don't overwrite).
+2. **Run `/adopt`.** This is the recommended path. Claude researches the repo (package manager, framework versions, **your existing conventions**, configs, CI, deploy target), then authors a `CLAUDE.md` in the proven structure **populated with your project's real facts** — folding in any existing `CLAUDE.md`/`AGENTS.md`, keeping your conventions authoritative, wiring in the skills + secret-safety hooks, and asking you about intent (North Star, ranked priorities) and any **opt-in upgrades** (e.g. a component REGISTRY, the env-module pattern) where the toolkit is stricter than your current practice. The build/track system is opt-in — it asks. Review and tweak the result.
+3. (Optional) Don't want a tracked build? Tell `/adopt` no, or delete `.claude/ROADMAP.json`, `.claude/feature-tracks/`, `.claude/ai-instructions/`, and the build/track skills + commands. The rest of the skills work standalone.
 4. (Optional) Prune skills you'll never use from `.claude/skills/` (and their `.claude/commands/*.md`).
 
-Prefer not to edit your `CLAUDE.md`? Use the "Zero-edit adoption" paragraph at the bottom of `CLAUDE.add.md` — paste it to Claude once per session.
+**Lighter-touch alternatives** (if you don't want `/adopt` to restructure your `CLAUDE.md`):
+- **Append the bolt-on block** — copy the fenced block from `CLAUDE.add.md` into your existing root `CLAUDE.md`. Your rules stay; this just makes Claude aware of the tooling.
+- **Zero-edit** — paste the "Zero-edit adoption" paragraph at the bottom of `CLAUDE.add.md` to Claude once per session, no file changes at all.
+
+### Which command for which situation?
+
+| You have… | Run | What it does |
+|-----------|-----|--------------|
+| A new / greenfield project | `/init-claude` | Adopts the opinionated stack; fills the template's blanks from the repo. |
+| An existing project with its own setup | `/adopt` | Keeps your stack & conventions; wraps the toolkit around them and restructures `CLAUDE.md` into the proven format. |
 
 ## The hooks (what they enforce)
 

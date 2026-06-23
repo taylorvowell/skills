@@ -2,7 +2,9 @@
 
 Use this when you want these skills, hooks, and the build system in a project that **already has its own stack and conventions**. It does NOT change how that project is built — it only adds tooling.
 
-**How to use:** copy the block below into your existing `CLAUDE.md` (append it). Then follow `INSTALL.md` to copy the `.claude/` directory in. That's it — your project's own rules stay authoritative; this just tells Claude the tooling exists and when to reach for it.
+> **Prefer the automated path:** after copying `.claude/` in, run **`/adopt`** — it researches your repo and produces a full `CLAUDE.md` in the proven structure (folding in your existing one), wires the toolkit, and asks before changing anything. This file is the **manual / lighter-touch** alternative for when you'd rather just append a block and not restructure your `CLAUDE.md`.
+
+**How to use (manual):** copy the block below into your existing `CLAUDE.md` (append it). Then follow `INSTALL.md` to copy the `.claude/` directory in. That's it — your project's own rules stay authoritative; this just tells Claude the tooling exists and when to reach for it.
 
 If you'd rather not edit your `CLAUDE.md` at all, paste the same block into the chat once at the start of a session (see "Zero-edit adoption" at the bottom).
 
