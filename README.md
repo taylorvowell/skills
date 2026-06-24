@@ -35,6 +35,23 @@ Stack-light by design: it assumes Next.js (App Router) and leans toward Tailwind
 
 ---
 
+## A typical workflow
+
+1. **Brainstorm it.** Have a feature idea? Run **`/brainstorm <your idea>`**. Claude fleshes it out into a clear, project-aware concept that is documented as a .md — features, how it's used, how it fits the app — and refines it with you. Say **`GO`** and it writes the concept up; say **`GO`** again to hand it straight to planning.
+2. **Plan a feature.** Run **`/plan <what you want to build>`**. Claude clarifies scope with you, breaks the feature into numbered steps each with a concrete verification, scaffolds the track, and adds it to the roadmap. (Use `/architect` first for a big strategic decision; use `/future` to park ideas for later — `/future develop` turns one into a plan when you're ready.)
+3. **Build.** Run `/build` (or `/feature <name>`). Claude executes the current step, runs its verification, updates the progress log, and stops — then recommends the next action and waits. Say **`GO`** and it runs exactly that recommendation; repeat to advance step by step. `/roadmap` shows the arc; `/status` shows the detail. Need to add something mid-track? `/plan add-step <track> <what>`.
+4. **Commit.** Run `/commit`. Claude will commit and push after performing safety checks and key leak prevention, including description of what was completed.
+5. **Keep it healthy.** Reach for `/audit` (architecture & conventions review), `/speedtest` (performance), `/test` and `/e2e` (correctness), `/security` (when touching auth, secrets, or external input), and `/debug` when something breaks at runtime.
+6. **Ship & record.** `/deploy` to a preview or production. Decisions and procedures get written down as ADRs and runbooks automatically (`/document`), so the _why_ survives.
+
+### The "GO" handoff — how each turn ends
+
+Claude doesn't run ahead. When it finishes a piece of work, it recaps what it did and ends by recommending the single next action it would take. Reply **`GO`** and it runs exactly that recommendation — no need to restate the task. This makes every session a tight loop: Claude proposes, you approve with one word, it executes, then proposes the next move. You set the pace; Claude always knows what's next. (For a `/build` spine step you can also reply **Complete** to do everything except advancing the build.)
+
+The throughline: **the plan and its progress are written down, verified, and resumable** — so a multi-week build stays coherent across many sessions, and any session can be picked up cold.
+
+---
+
 ## The build system — plan, track, execute
 
 Work is organized into **tracks**. A track is a self-contained mini-build: a goal, a numbered list of steps, and its own status. The big picture lives in one roadmap; each track tracks its own progress; Claude advances a track **one verified step at a time** and never moves on until the step's checks pass.
@@ -58,31 +75,19 @@ Work is organized into **tracks**. A track is a self-contained mini-build: a goa
 
 ### The commands that drive it
 
-| Command                                                        | What it does                                                                                                                                        |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/plan <feature>`                                              | **Plan a new feature** — decompose it into verified steps and scaffold a track. (`/plan add-step <track> <what>` adds a step to an existing track.) |
-| `/roadmap`                                                     | The macro picture across all tracks — what's done, active, blocked, next.                                                                           |
-| `/build`                                                       | Advance the **spine** track (your current top priority) by one verified step.                                                                       |
-| `/feature <name>`                                              | Advance any other track by one verified step.                                                                                                       |
-| `/status`                                                      | Where the active track stands.                                                                                                                      |
-| `/verify`                                                      | Run the current step's verification checks.                                                                                                         |
-| `/future` (`/icebox`)                                          | Park a "someday" idea in the backlog without derailing now (`/future develop <id>` turns it into a planned track).                                  |
-| `/blocker`, `/checkpoint`, `/rollback`, `/skip`, `/reset-step` | Handle blockers and safe recovery points.                                                                                                           |
+| Command                                                        | What it does                                                                                                                                          |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/brainstorm <idea>`                                           | **Flesh out a raw idea** into a clear, project-aware concept — the step just before planning. On `GO`, writes it up and offers to hand it to `/plan`. |
+| `/plan <feature>`                                              | **Plan a new feature** — decompose it into verified steps and scaffold a track. (`/plan add-step <track> <what>` adds a step to an existing track.)   |
+| `/roadmap`                                                     | The macro picture across all tracks — what's done, active, blocked, next.                                                                             |
+| `/build`                                                       | Advance the **spine** track (your current top priority) by one verified step.                                                                         |
+| `/feature <name>`                                              | Advance any other track by one verified step.                                                                                                         |
+| `/status`                                                      | Where the active track stands.                                                                                                                        |
+| `/verify`                                                      | Run the current step's verification checks.                                                                                                           |
+| `/future` (`/icebox`)                                          | Park a "someday" idea in the backlog without derailing now (`/future develop <id>` turns it into a planned track).                                    |
+| `/blocker`, `/checkpoint`, `/rollback`, `/skip`, `/reset-step` | Handle blockers and safe recovery points.                                                                                                             |
 
 A shipped `example-track` makes these work the moment you install — replace it with your own.
-
----
-
-## A typical workflow
-
-1. **Set up.** Run `/adopt` (existing) or `/init-claude` (new). You and Claude agree on the North Star and ranked priorities — the compass for everything after.
-2. **Plan a feature.** Run **`/plan <what you want to build>`**. Claude clarifies scope with you, breaks the feature into numbered steps each with a concrete verification, scaffolds the track, and adds it to the roadmap. (Use `/architect` first for a big strategic decision; use `/future` to park ideas for later — `/future develop` turns one into a plan when you're ready.)
-3. **Build.** Run `/build` (or `/feature <name>`). Claude executes the current step, runs its verification, updates the progress log, and stops — ready for the next `/build`. Repeat. `/roadmap` shows the arc; `/status` shows the detail. Need to add something mid-track? `/plan add-step <track> <what>`.
-4. **Commit.** Run `/commit`. Claude will commit and push after performing safety checks and key leak prevention, including description of what was completed.
-5. **Keep it healthy.** Reach for `/audit` (architecture & conventions review), `/speedtest` (performance), `/test` and `/e2e` (correctness), `/security` (when touching auth, secrets, or external input), and `/debug` when something breaks at runtime.
-6. **Ship & record.** `/deploy` to a preview or production. Decisions and procedures get written down as ADRs and runbooks automatically (`/document`), so the _why_ survives.
-
-The throughline: **the plan and its progress are written down, verified, and resumable** — so a multi-week build stays coherent across many sessions, and any session can be picked up cold.
 
 ---
 

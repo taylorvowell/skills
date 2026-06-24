@@ -174,6 +174,7 @@ This stack runs **ahead of model training data** (Next 16, Tailwind v4, React 19
 
 The build is organized as independent **tracks**, each a self-contained mini-build (`_STATUS.json` + `_PROGRESS.md` + numbered step files under `.claude/feature-tracks/<id>/`). The macro source of truth is `.claude/ROADMAP.json`, rendered by `/roadmap`; its status rollup is **derived** from each track's `_STATUS.json` — never hand-write progress into the roadmap. The step-file template is at `.claude/ai-instructions/00 - README.md`.
 
+- `/brainstorm <idea>` — flesh out a raw idea into a clear, project-aware concept (the step just before `/plan`); on GO it writes the concept to `docs/brainstorms/<slug>.md` and offers to hand it to `/plan`.
 - `/plan <feature>` — plan a new feature: decompose it into verified steps and scaffold a track (`/plan add-step <track> <what>` adds a step to an existing one).
 - `/roadmap` — macro picture across all tracks (read-only, derived).
 - `/build` — advance the **spine** track (the `spine: true` track in `ROADMAP.json`, resolved dynamically — run `/roadmap` to see which).
@@ -194,7 +195,7 @@ Never advance without Verification passing. Never edit a `_STATUS.json` / `_PROG
 
 These live in `.claude/skills/` and trigger from their descriptions; this is the fast map.
 
-- **Build & progress:** `/plan <feature>` (plan a new track), `/build`, `/feature <name>`, `/roadmap`, `/status`, `/verify`, `/blocker`, `/checkpoint` + `/rollback`, `/future`.
+- **Build & progress:** `/brainstorm <idea>` (flesh out an idea before planning), `/plan <feature>` (plan a new track), `/build`, `/feature <name>`, `/roadmap`, `/status`, `/verify`, `/blocker`, `/checkpoint` + `/rollback`, `/future`.
 - **Quality & security:** `/audit`, `/audit-task`, `security`, `web-design-guidelines`, `/document`, `/improve`.
 - **Next.js, React & styling:** `next-best-practices`, `next-cache-components`, `component-system`, `tailwind-v4`, `shadcn`, `vercel-react-best-practices`, `vercel-composition-patterns`, `vercel-react-view-transitions`.
 - **Testing:** `/test`, `/e2e <criteria>`, `/test-write`, `/test-heal`, `/heal`.
