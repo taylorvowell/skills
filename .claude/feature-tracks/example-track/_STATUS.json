@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "featureName": "example-track",
   "currentStep": "01",
   "phase": "Foundation & Setup",
   "lastUpdated": "2025-01-01T00:00:00Z",

@@ -76,6 +76,8 @@ When the step you just completed in step 9 was the **last** step of the track (n
 
 If the sweep's findings exceed `/heal`'s inline threshold (≥3 violations / multi-domain / >5-file fix / major duplication), don't apply — point the user at a `/audit` for the phased plan.
 
+5. **Offer the post-build audit of the finished track — always, even when the sweep came back clean.** The advisory sweep is a fast in-line gate; the **post-build audit** is the full pass — the 13 core axes **plus** the hardening lenses (security, rendering strategy, failure-path completeness, accessibility, cache-invalidation, config/env parity, observability), scoped *exactly* to this track and run in a fresh unbiased agent, ending in a tiered remediation (inline `/heal` or a `<slug>-remediation` track). Finishing the spine track is the natural moment for it. Make it a real offer in the completion report, not a vague suggestion: present it as the recommended next action, scope pre-filled with this track. On accept, invoke the `audit` skill in **post-build mode** — the track is already the confirmed scope (its Step 0 collapses to a single yes/no), so it derives the file set from this track's step "Files & Areas Touched" + the run's commit range and goes straight in. Phrase it as the next step you'll take, not a chore for the user.
+
 ## Hard Rules
 
 These are not style preferences. Violating them corrupts the build state.

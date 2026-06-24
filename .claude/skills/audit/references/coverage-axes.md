@@ -1,8 +1,10 @@
 # Coverage Axes
 
-The 13 axes every audit must consider. Use this as a "did I look here?" pass before drafting findings — not every axis will produce findings for every audit, and that's fine.
+The 13 core axes every audit must consider, plus the **Hardening lenses** (A–G, at the end of this file) that are mandatory in post-build mode and applied as-relevant otherwise. Use this as a "did I look here?" pass before drafting findings — not every axis will produce findings for every audit, and that's fine.
 
 For each axis, the entries below describe **what to look for** (the bad patterns) and **the source of truth** (where the finding's citation will come from). Cite the source of truth on every finding.
+
+Findings from the hardening lenses use the same six-field shape and the same severity rubric as the core axes — they extend coverage, they aren't a separate report.
 
 ---
 
@@ -23,26 +25,51 @@ For each axis, the entries below describe **what to look for** (the bad patterns
 
 ---
 
-## 2. Performance / optimization
+## 2. Performance & code optimization
 
-**What to look for:**
-- Large client-side imports that should be `dynamic()` with `ssr: false`.
-- Components without lazy loading where they should have it (below-the-fold, modals, drawers).
-- Images missing dimensions / using `fill` without a sized container (CLS risk).
-- Missing `priority` on LCP image.
-- Synchronous heavy work in render (sorting, filtering big arrays) that should be memoized or moved server-side.
-- Unbounded `useEffect` chains, re-renders from new object/array identities every render.
-- `unstable_cache` where `use cache` would be cleaner (but check whether the project has formally deferred Cache Components migration).
-- Bundle-size red flags: importing the entire `lodash`, the whole `date-fns` instead of named imports, etc.
-- Anything that would blow LCP < 2.5s, INP < 200ms, CLS < 0.1.
+**The lens:** this axis is about the *code* being efficient — doing the least work to get the right result: not recomputing, not over-fetching, not walking the same data twice, not shipping waste. It is **static reasoning about the source**, distinct from `/speedtest` (which *measures* a route's runtime LCP/INP/CLS in a real browser). Do not punt code-efficiency findings to speedtest — speedtest measures the symptom; this axis finds the cause in the code. Everything below you can find by reading. If the concern is purely a runtime route metric, name it and hand it to speedtest; otherwise it's yours.
 
-**Source of truth:** `vercel-react-best-practices`, `vercel-optimize`, `lighthouse-optimize` skills, `CLAUDE.md` ("Performance").
+**Wasted / redundant work:**
+- The same value computed more than once when it could be derived once and reused — re-sorting, re-filtering, or re-mapping the same array in multiple spots, or on every render.
+- Work whose result is discarded, or computed before an early return that makes it unnecessary.
+- Client-side recomputation of something the server already returned (cross-ref axis 7) — e.g. re-deriving a total the backend sends.
+- Expensive synchronous work in render (sort/filter/reduce over large arrays, `JSON.parse`, regex compile) that should be memoized, precomputed, or moved server-side.
+
+**Algorithmic efficiency:**
+- O(n²) shapes: `.find()` / `.includes()` / `.filter()` called inside a `.map()` or loop over the same collection — a `Map`/`Set` lookup usually makes it O(n).
+- Repeated linear scans of the same data that could share a single pass.
+- Cloning or rebuilding large structures in a hot path; unnecessary deep copies.
+- Data-structure mismatch — an array used for membership tests (wants a `Set`); repeated `Object.keys().find()` (wants a keyed lookup).
+
+**Data-fetching efficiency:**
+- Request waterfalls — sequential `await`s with no data dependency between them that should be a single `Promise.all` (cross-ref axis 5).
+- N+1 fetches — a query per item in a loop instead of one batched query.
+- Over-fetching — selecting/returning fields the caller never uses; fetching a full list just to show a count.
+- Missing dedup/caching — the same fetch issued from multiple places in one render tree that React `cache()` (server) or a shared loader would collapse into one.
+- Blocking the whole page on one slow `await` where Suspense + streaming would let the rest paint first.
+
+**React render efficiency:**
+- New object/array/function identities created every render and passed as props or hook deps — busts memoization and re-renders children.
+- Genuinely expensive derivations not wrapped in `useMemo`. (Be judgment-led: do **not** recommend memoizing cheap work — over-memoization is its own debt.)
+- State placed too high, re-rendering a large tree on every keystroke; state that should be colocated at a leaf.
+- Large lists rendered in full where windowing/virtualization is warranted.
+
+**Bundle & loading:**
+- Heavy client imports that should be `dynamic()` (below-the-fold, modals, drawers, charts, editors).
+- Whole-library/barrel imports (`import _ from "lodash"`, the whole `date-fns`) instead of named/per-function imports.
+- A `'use client'` boundary dragging a server-safe module into the browser bundle.
+- `unstable_cache` where `use cache` would be cleaner (respect any formal deferral of Cache Components).
+- Missing `priority` on the LCP image; images without dimensions — but if it's purely a runtime-metric question, hand it to `/speedtest`.
+
+**How to find it:** read the hot paths and the data layer, not just the component shells. Trace each significant piece of data from where it's fetched → transformed → rendered, and count how many times it's walked. For every expensive-looking operation ask the three questions: does this run **more often** than it must, over **more data** than it must, fetching **more** than it must?
+
+**Source of truth:** `vercel-react-best-practices`, `vercel-optimize`, `next-cache-components`, `CLAUDE.md` ("Performance"). For runtime *measurement* defer to `lighthouse-optimize` / `/speedtest`. Cite the specific pattern, not "perf best practice."
 
 ---
 
-## 3. Structural soundness
+## 3. Structural soundness & architecture fit
 
-**What to look for:**
+**What to look for — structural soundness:**
 - Files that mix concerns (a "Cart" file that does fetching, UI, and analytics — should be split).
 - Files way over a reasonable size (>500 lines is a yellow flag, >1000 is a red flag, but it depends).
 - Circular imports.
@@ -51,7 +78,19 @@ For each axis, the entries below describe **what to look for** (the bad patterns
 - Components that should be route-level but are nested in other components, or vice versa.
 - Broken layering: e.g., `lib/` calling into `components/`.
 
-**Source of truth:** `CLAUDE.md` ("Components — STRICT RULES"), general software architecture principles (cite the principle, not just "vibes").
+**What to look for — architecture fit (does this belong the way the system is actually built?):**
+
+Read `CLAUDE.md`'s "Architecture Flow" and the relevant architecture decision records *before* judging this — fit is measured against the project's declared design, not generic taste.
+
+- **Respects the data-flow boundaries.** If the declared flow is `CMS → API layer → frontend` and this code has the frontend calling the CMS directly, that's a fit violation even though it "works." Honor every "X never calls Y directly — always through Z" rule.
+- **One way to do a thing.** Does this introduce a *second, parallel* pattern for something the codebase already solves one way — a different data-fetching approach, a different state path, a hand-rolled version of an existing utility/primitive? Competing patterns are architectural debt: every future reader now has to learn both, and the next person picks at random.
+- **Layering direction holds.** Dependencies point the intended way (UI → lib → data, never the reverse); no domain reaching into another domain's internals.
+- **Right seam / altitude.** Business logic in `lib/` or Server Actions, not buried in a component; cross-cutting concerns (auth, validation, logging) handled at the boundary, not re-implemented per call site.
+- **Composes, doesn't island.** Will the rest of the system be able to build on this, or is it a one-off the next feature will have to work around or duplicate?
+
+**The fit test:** *"If a new engineer followed the patterns already in this repo, is this what they'd have built? If not — is the deviation deliberate and better, or accidental drift?"* Accidental drift is a finding; a deliberate, justified deviation is not (but should be documented — cross-ref axis 10).
+
+**Source of truth:** `CLAUDE.md` ("Architecture Flow" + "Components — STRICT RULES"), the project's architecture decision records, general software architecture principles (cite the principle or the project rule, not just "vibes").
 
 ---
 
@@ -116,18 +155,29 @@ For each axis, the entries below describe **what to look for** (the bad patterns
 
 ---
 
-## 8. Tech debt invoked by the solve
+## 8. Tech debt — carried and introduced
 
-**This is the rare and mandatory axis.** Every audit must include this section even if empty.
+**Mandatory axis — every audit includes this section even if empty.** It runs in two directions: debt the code *already carries*, and debt your *recommendations would add*. The second is the one auditors most often forget — but the first is what the user usually means by "is this creating tech debt?"
 
-**What to look for in your own recommendations:**
-- Does a recommended refactor introduce a new abstraction the codebase doesn't have yet? That's debt unless it's clearly load-bearing.
-- Does merging two components into one CVA component introduce a `discriminated union` props API that's confusing? Note the cost.
-- Does moving a component require adding a new context provider? That has reach implications.
-- Does the recommendation depend on a library upgrade or new dependency? Call out the install + maintenance cost.
-- Does it create a "transitional" state where some callers use the new API and others don't? Plan the cleanup or accept the debt explicitly.
+**Debt the existing code carries (hunt for it):**
+- **Speculative / premature abstraction** — a factory, generic, hook, or config layer built for a generality that never arrived (abstraction-for-one, a config option for a value that never changes, a "flexible" system with exactly one caller). The bar is the North Star: the *leanest* thing that completely does the job.
+- **Copy-paste forks** — the same logic duplicated and now quietly drifting (cross-ref axis 7). This is the classic compounding debt.
+- **Half-done migrations / transitional states** — `V2`/`new`/`legacy`/`old` living beside the original, a migration that stalled, a feature flag whose other branch is dead.
+- **Deferral markers** — `TODO` / `FIXME` / `HACK` / `XXX`, `@ts-ignore` / `@ts-expect-error`, `eslint-disable`, and silent `catch {}` swallows. Grep the scope; each is a deferred decision someone has to pay back.
+- **Dead code** — unused exports, unreachable branches, commented-out blocks, props no caller passes. Run the project's dead-code tool over the scope if it has one (e.g. `knip`).
+- **Workarounds that outlived their cause** — a patch for a framework bug fixed three versions ago; a hand-rolled polyfill now native.
+- **Stringly-typed / unvalidated seams** — `any`, untyped external data, magic strings where an enum or `as const` belongs.
 
-**Source of truth:** your own honesty. If you find no debt, say so plainly in the doc.
+**Debt your recommendations would add (own it honestly):**
+- A recommended refactor that introduces a new abstraction the codebase doesn't have — justify that it's load-bearing, not speculative, or don't recommend it.
+- Merging components into one CVA component behind a confusing discriminated-union props API — note the cost.
+- A move that requires adding a new context provider — note the reach.
+- A dependency on a library upgrade or a new dependency — call out the install + maintenance cost.
+- A "transitional" state where some callers use the new API and others don't — plan the cleanup or accept the debt explicitly.
+
+If you find none in either direction, say so plainly. "None — the scope carried no markers or dead code, and the recommendations are pure removal/consolidation with no new abstractions" is a valid and valuable result.
+
+**Source of truth:** `CLAUDE.md` (North Star — "the leanest way that completely does the job"), the project's dead-code tool, and your own honesty.
 
 ---
 
@@ -219,7 +269,9 @@ Naming is one of the two hard problems in software. Bad names compound as the co
 
 **Apply with restraint.** "Latest leverage" findings are usually Medium or Low severity unless the current pattern is actively deprecated. Flag the opportunity; don't demand the migration.
 
-**Source of truth:** Vercel skills (`vercel-react-best-practices`, `next-cache-components`, etc.), official Vercel/Next docs.
+**Doc-ground before you claim it.** This stack runs ahead of training data — never assert "X is new / deprecated / has a better replacement" from memory. Verify against the installed version's docs first: the `next-devtools` MCP (`nextjs_docs`) for Next.js, `context7` for everything else (Tailwind v4 → `/tailwindlabs/tailwindcss.com`, query "v4"). A latest-leverage finding with no doc citation is not a finding.
+
+**Source of truth:** Vercel skills (`vercel-react-best-practices`, `next-cache-components`, etc.), the `next-devtools` MCP / `context7` for installed-version docs, official Vercel/Next docs.
 
 ---
 
@@ -236,14 +288,146 @@ This is the catch-all for findings that don't fit cleanly into 1–12. Use it sp
 
 ---
 
+# Hardening lenses (A–G)
+
+These extend the 13 core axes for the **post-build hardening pass** — the audit a feature gets right after it ships. They target the failure class that passes in dev and bites in prod: missing auth, stale caches, empty failure branches, broken a11y on a custom composition, an env var that's set locally but not in prod. **All seven are mandatory in post-build mode.** In an ordinary target-scoped deep audit, run lens A (security) always and the rest when the scope includes routes, data fetching/mutation, or user-facing UI. Findings use the same six-field shape and severity rubric as the core axes.
+
+---
+
+## A. Security *(run on every deep audit, not only post-build)*
+
+**What to look for:**
+- A user-facing route, Server Action, or API handler that performs a privileged action with **no auth or authorization check** (authenticated ≠ authorized — does *this* user own *this* resource?).
+- External data used without validation at the boundary — form input, route/search params, webhook bodies, third-party API responses — with no Zod (or equivalent) schema.
+- A secret / service-role key / privileged backend client **reachable from client code** (`'use client'` file importing a server-only module or the server env).
+- A webhook handler with no signature verification, or one that trusts the payload before verifying.
+- Secrets or PII written into logs, error-monitoring, or analytics payloads (cross-ref lens G).
+- An abusable endpoint (auth, sign-up, expensive query, LLM call) with no rate limiting.
+- For any LLM/AI feature: untrusted input concatenated into a prompt with no injection defense.
+
+**Note:** this is the audit's first-class security pass. A *standalone* security-only deep-dive (threat model, full surface sweep) is `/security-review`'s job — but a deep audit never skips security.
+
+**Source of truth:** the `security` skill, `CLAUDE.md` (env / security-critical rules), `/security-review`.
+
+---
+
+## B. Rendering strategy
+
+**What to look for:**
+- A route rendered dynamically that could be static or ISR (no per-request/personalized data), or rendered static when it needs per-request data — the wrong default either ships stale content or pays a render cost on every request.
+- RSC discipline: `'use client'` higher than the leaf; a client boundary dragging server-safe modules into the bundle (cross-ref axis 2).
+- Data fetched in `useEffect` that should be a Server Component or Server Action (cross-ref axis 1).
+- Below-the-fold / modal / chart / editor client chunks not behind `dynamic()`.
+- One slow `await` blocking the whole page paint where a Suspense boundary would stream the shell first.
+- `unstable_cache` where `use cache` fits (respect any formal deferral of Cache Components — cross-ref axis 12).
+
+**Source of truth:** `next-best-practices`, `next-cache-components`, `vercel-react-best-practices`; doc-ground rendering-API claims via the `next-devtools` MCP.
+
+---
+
+## C. Failure-path completeness
+
+The happy path is what gets built and demoed; the failure paths are what get forgotten. This lens asks, for every surface the feature added: *what happens when it's loading, empty, or broken?*
+
+**What to look for:**
+- App Router boundaries missing where the feature's routes need them: `loading.tsx` (no streamed fallback), `error.tsx` (an unhandled throw white-screens the segment), `not-found.tsx`, `global-error.tsx`.
+- The **three states** on every data-driven surface: a populated state but no **loading** state, no **empty** state ("you have no orders yet"), and no **error** state. Flag whichever are missing.
+- Server Actions that `throw` into the void instead of returning a **typed error result** the UI can render; optimistic updates with no rollback on rejection.
+- Empty `catch {}` / `catch (e) {}` that swallow a failure silently (axis 8 flags the *marker*; this lens judges the *missing behavior* — what should happen instead).
+- Network/external calls with no timeout or no handling of the non-200 path.
+
+**Source of truth:** `next-best-practices` (error/loading conventions), `CLAUDE.md`.
+
+---
+
+## D. Accessibility (static)
+
+Readable-from-source accessibility — distinct from the runtime Lighthouse/contrast pass, which belongs to `/speedtest`. shadcn primitives ship accessible; the risk is in the **custom compositions** a new feature introduces.
+
+**What to look for:**
+- Non-semantic interactive elements: `onClick` on a `div`/`span` instead of a `<button>`/`<a>`; clickable things not keyboard-operable.
+- Images with no `alt` (or decorative images missing `alt=""`).
+- Form controls with no associated `<label>` (or `aria-label`/`aria-labelledby`).
+- Modals/menus/popovers with no focus management — focus not trapped while open, not restored to the trigger on close.
+- Broken heading hierarchy (an `h1`→`h3` jump, multiple `h1`s), or visual-only hierarchy via font size.
+- Icon-only buttons with no accessible name.
+
+**Don't** re-flag what shadcn already handles correctly, and hand color-contrast / runtime-AOM checks to `/speedtest`.
+
+**Source of truth:** `web-design-guidelines`, WCAG 2.2 AA.
+
+---
+
+## E. Cache-invalidation correctness
+
+In the RSC / Cache Components world, the most common data-freshness bug isn't on the read side — it's a write that never invalidates the read.
+
+**What to look for:**
+- A mutation (Server Action or route that writes) with **no `revalidatePath` / `revalidateTag` / `updateTag`** after the write — the UI keeps showing pre-mutation data until a hard reload.
+- A cache tag/key on the write side that **doesn't match** what the readers cache under (invalidates the wrong thing → still stale).
+- Over-broad invalidation (revalidating the whole layout when one tag would do) — the inverse cost.
+- `revalidatePath` used where a tag is more precise, or a mutation relying on a TTL to "eventually" refresh when correctness needs immediacy.
+
+**Source of truth:** `next-cache-components` (`cacheTag` / `updateTag` / `revalidateTag`), installed-version Next docs (doc-ground via the `next-devtools` MCP).
+
+---
+
+## F. Config / environment parity
+
+The "works on my machine, 500s in prod" class — a feature reads an env var that exists in `.env.local` and nowhere else.
+
+**What to look for:**
+- A new `process.env.*` read whose variable is **not in `.env.example`** (empty-valued) — the next environment won't know to set it.
+- A new env var not **validated in the env module** (`lib/env.ts` for client, `lib/env-server.ts` for server) — a missing value fails silently at runtime instead of loudly at boot.
+- Raw `process.env` access **outside** the env modules (cross-ref axis 9).
+- A var on the **wrong side of the trust boundary** — a server secret read in a `'use client'` path, or a `NEXT_PUBLIC_*` used where a server-only secret was intended.
+- Hardcoded values (URLs, keys, IDs) that differ between preview and prod and should be env-driven.
+
+**Source of truth:** the `security` skill (env trust boundary), `CLAUDE.md` (Environment Variables — safety-critical).
+
+---
+
+## G. Observability
+
+Can you tell, from prod, whether this feature is working — without a user reporting it?
+
+**What to look for:**
+- Key user actions (the conversions/events the product cares about) with no analytics event fired (the project's analytics — e.g. PostHog).
+- Risky paths — payments, external API calls, mutations, webhooks — with no error monitoring (e.g. Sentry) capturing failures.
+- Logging at the wrong altitude: silent where a failure needs a breadcrumb, or noisy/`console.log`-spammy in a hot path. Any log/event that leaks a secret or PII is a **security** finding too (cross-ref lens A).
+- A feature flag with no way to observe whether the flagged path is being taken.
+
+**Apply with restraint** — match the project's actual observability posture (don't demand Sentry if the project doesn't use it). Flag the gap relative to what the project already does elsewhere.
+
+**Source of truth:** `CLAUDE.md` (North Star — observable; MCP/observability section), the project's connected analytics / error-monitoring services.
+
+---
+
+## Conditional lenses (apply only when the scope calls for it)
+
+**SEO / metadata depth** — for user-facing/public routes only:
+- Missing `metadata` / `generateMetadata`; missing or generic OG/Twitter images; no canonical URL; missing structured data (JSON-LD) where it helps; sitemap/robots not updated for new public routes.
+- **Source of truth:** `next-best-practices`, Next metadata docs.
+
+**New-dependency justification** — when the feature added dependencies:
+- A redundant dependency (a second date / state / validation library when one exists); a whole-library/barrel import where named imports would tree-shake (cross-ref axis 2 bundle); a heavy dependency for a job the platform already does.
+- **Not** CVE / supply-chain scanning — that's a dedicated tool and is deliberately out of audit scope.
+- **Source of truth:** `CLAUDE.md` (North Star — leanest thing that does the job), `package.json`.
+
+---
+
 ## Severity calibration cheatsheet
 
 When in doubt:
 
 - It violates a hard rule in `CLAUDE.md` → **Critical**.
 - It would break a parameterized/reusable system, hit a perf budget, or leak a secret → **Critical**.
+- A missing auth/authorization check, an unvalidated external-data boundary, or a secret reachable from the client (lens A) → **Critical**.
+- A mutation that never invalidates its cache so the UI shows stale data (lens E), or a new env var missing from `.env.example` / the env module (lens F) → **High**.
+- An unhandled failure path — no `error.tsx`, no error state, a swallowed `catch` (lens C) — or a custom interactive element that isn't keyboard-accessible (lens D) → **High** (or Medium if the surface is low-traffic / internal).
 - It violates an architecture decision record or duplicates a registered primitive → **High**.
 - It misses a latest-Next.js leverage opportunity but the current code works → **Medium** (or Low if obscure).
+- A missing analytics event or error-monitoring on a risky path (lens G) → **Medium**.
 - It's a documentation/naming/location nit → **Low**.
 
 When in doubt about effort:

@@ -9,7 +9,7 @@ Each subfolder here is one **track** — a self-contained, multi-session mini-bu
 └── NN - Title.md         # numbered step files (01, 02, …)
 ```
 
-- A track is declared in `.claude/ROADMAP.json` (its `id`, `goal`, `phase`, `statusFile`, `dir`, `lifecycle`, `dependsOn`, `owns`).
+- A track is declared in `.claude/ROADMAP.json` (its `id`, `goal`, `phase`, `statusFile`, `dir`, `lifecycle`, `dependsOn`, `owns`). Each `dependsOn` entry is an object — `{ "track": "<other-id>", "reason": "<why>", "blocking": true }` — not a bare id; use `[]` when the track stands alone.
 - Exactly one track is the **spine** (`spine: true` in ROADMAP.json). `/build` advances the spine; `/feature <id>` advances any track.
 - Step status lives ONLY in each track's `_STATUS.json` — never hand-write progress into `ROADMAP.json`. `/roadmap` derives the macro rollup from these files.
 

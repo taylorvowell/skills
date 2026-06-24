@@ -48,6 +48,7 @@ When the step just completed was the **last** in this track (no `not-started`/`i
 2. A **fresh-eyes 13-axis review** (the `/audit` reviewer subagent) over the track's changed files (plus the project's dead-code tool, if it has one).
 3. **Auto-apply the safe/deterministic subset** under `/heal`'s 4-condition guardrail; `/commit` it; log to `.claude/heal-log.md`.
 4. **Surface subjective/irreversible findings** in the report — don't auto-apply. If findings exceed `/heal`'s inline threshold, point at a `/audit` instead.
+5. **Offer the post-build audit of the finished feature in your completion report — always, even on a clean sweep.** The sweep is a fast in-line gate; the **post-build audit** is the full pass — the 13 core axes **plus** the hardening lenses (security, rendering strategy, failure-path completeness, accessibility, cache-invalidation, config/env parity, observability), scoped *exactly* to this track and run in a fresh unbiased agent, ending in a tiered remediation (inline `/heal` or a `<slug>-remediation` track). Finishing the track is the natural moment for it. Make it a real offer with scope pre-filled, presented as the recommended next action. On accept, invoke the `audit` skill in **post-build mode** — the track is the confirmed scope (Step 0 collapses to a single yes/no), so it derives the file set from this track's step "Files & Areas Touched" + the run's commit range and proceeds. Phrase it as the next step you'll take, not a chore.
 
 ## Hard rules
 

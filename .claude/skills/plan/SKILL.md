@@ -46,7 +46,7 @@ Break the work into the **fewest steps that each leave the repo in a verifiable,
 
 Pick a kebab-case `<id>` (short, descriptive). Create `.claude/feature-tracks/<id>/`:
 
-- **`_STATUS.json`** — `schemaVersion: 1`, `currentStep: "01"`, `phase: "<phase label>"`, all steps listed as `not-started`, empty `blockers`/`skipped`. (You may author this directly — the track doesn't exist yet, so this is creation, not a progress mutation.)
+- **`_STATUS.json`** — `schemaVersion: 1`, `featureName: "<id>"` (matches the track dir), `currentStep: "01"`, `phase: "<phase label>"`, all steps listed as `not-started`, empty `blockers`/`skipped`. (You may author this directly — the track doesn't exist yet, so this is creation, not a progress mutation.)
 - **`_PROGRESS.md`** — header + the planned scope summary + the empty `<!-- entries below this line -->` marker.
 - **`NN - Title.md`** — one file per step, numbered `01`, `02`, … using the template above.
 
@@ -70,7 +70,7 @@ Append a track object (declarations only — never write step status here):
 }
 ```
 
-- Fill `dependsOn` / `owns` from step 1. Use a real `phase` id from the file's `phases[]`.
+- Fill `dependsOn` / `owns` from step 1. A `dependsOn` entry is an object — `{ "track": "<other-id>", "reason": "<why>", "blocking": true }` (use `"blocking": false` for a soft ordering preference); leave `[]` if the track stands alone. Use a real `phase` id from the file's `phases[]`.
 - **Spine handling:** if this track is the new spine, set its `spine: true` AND set `spine: false` on whatever track currently holds it (only one spine at a time) — tell the user you moved it. Otherwise leave `spine: false`; `/feature <id>` runs it.
 
 ### 5. Hand off

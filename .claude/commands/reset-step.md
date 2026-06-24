@@ -5,7 +5,7 @@ Operates on the active track — the **spine** track (`spine: true` in `.claude/
 Invoke the `progress-tracker` skill in RESET STEP mode on the step indicated by the active track's `_STATUS.json` `currentStep`. It will:
 1. Read the active track's `_STATUS.json` fresh
 2. Set the current step's `status` to `not-started`
-3. Clear `startedAt`, `completedAt`, `skippedAt`, and any error/blocker metadata on that step
+3. Clear `startedAt`, `completedAt`, `skippedAt`, and any error/blocker metadata on that step, and remove the step's matching entry from the top-level `blockers[]` array (and from `skipped[]` if it was skipped)
 4. Leave `currentStep` pointing at the same step (so `/build` will retry it)
 5. Append a `_PROGRESS.md` entry noting the reset
 6. Update `lastUpdated`

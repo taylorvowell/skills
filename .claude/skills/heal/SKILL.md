@@ -7,7 +7,7 @@ description: Bounded, autonomous self-healing loop that auto-fixes what you just
 
 You run a **bounded, autonomous self-healing loop** over a diff. The job: take code that was just written (usually by an agent), find what's objectively broken, and fix it — without grading your own homework, without thrashing, and without ever cheating to green. When you can't fix it safely, you stop and escalate rather than guess.
 
-This skill is the generalization of `/audit`'s Execution Mode into a reusable primitive. The build orchestrators (`/build`, `/feature`) call it on a step-verification failure; you also run it ad-hoc on the current diff.
+This skill is the project's reusable self-heal primitive. The build orchestrators (`/build`, `/feature`) call it on a step-verification failure, `/audit`'s inline-tier remediation hands its findings to it, and you also run it ad-hoc on the current diff.
 
 ## The one principle
 
@@ -45,7 +45,7 @@ Argument overrides: `<path>` → that path only; `last commit` → `git diff HEA
 
 ### 2. Fresh-eyes review (mandatory)
 
-Spawn ONE `Explore` subagent (fan out only if scope >8 files). It reads the changed files fresh and returns findings — it did NOT write them. Brief it to return three groups with `file:line` cites: **❌ oracle-breaking** (type/lint-error/test signals it can spot statically), **⚠️ convention/judgment** (hand-built primitive, duplicated existing component, wrong location, missing variant abstraction, raw env access outside the env module, missing input validation), **✅ followed**. It returns findings only — no fixes. (Mirror `/audit`'s task-audit fresh-eyes subagent brief; reuse its checklist.)
+Spawn ONE `Explore` subagent (fan out only if scope >8 files). It reads the changed files fresh and returns findings — it did NOT write them. Brief it to return three groups with `file:line` cites: **❌ oracle-breaking** (type/lint-error/test signals it can spot statically), **⚠️ convention/judgment** (hand-built primitive, duplicated existing component, wrong location, missing variant abstraction, raw env access outside the env module, missing input validation), **✅ followed**. It returns findings only — no fixes. (Mirror `/audit`'s quick-review fresh-eyes subagent brief; reuse its checklist.)
 
 ### 3. Run the oracle → classify
 
@@ -95,14 +95,14 @@ When escalating: do NOT roll back unilaterally (stopping is enough — the user 
 
 ### 7. Promote to /audit (too big to heal inline)
 
-If the findings exceed the inline threshold, **stop healing and hand off to `/audit`** (which writes a phased `.claude/audits/` remediation plan). Promote when any holds:
+If the findings exceed the inline threshold, **stop healing and hand off to `/audit`** (which writes a findings doc and routes the fix-up through the tiered remediation system — for a promotion-sized set that means a `<slug>-remediation` build track run by `/feature`). Promote when any holds:
 
 - ≥3 genuine convention **violations** (not just warnings).
 - Findings span multiple domains (several unrelated areas of the app).
 - A single fix would touch >5 files (e.g. "refactor this primitive + migrate all callers").
 - The work duplicates a major existing component/pattern — the right fix is a consolidation refactor, not a one-off.
 
-Below the threshold: heal inline. Above it: the diff still got its oracle fixes, but the architectural cleanup needs the phased structure — say so and point at the audit.
+These are the same thresholds `/audit` uses, in reverse, to decide its inline vs. track tier — so heal and audit meet cleanly at the boundary. Below the threshold: heal inline. Above it: the diff still got its oracle fixes, but the architectural cleanup needs the audit's structured findings + a remediation track — say so and point at the audit.
 
 ## Hard rules (never violate)
 
@@ -138,12 +138,11 @@ Stamp the timestamp from the environment's current date (the harness provides it
 
 ## Reuse (don't rebuild)
 
-- **Fresh-eyes subagent brief + convention checklist** → `/audit` (task-audit mode is the mandatory fresh-eyes review).
-- **Bounded 3-attempt loop + 4 escalation triggers + checkpoint/commit discipline** → `/audit` Execution Mode.
+- **Fresh-eyes subagent brief + convention checklist** → `/audit` (quick-review mode is the mandatory fresh-eyes review; mirror its brief).
 - **`/checkpoint`** → revert tag before risky fixes; **`/rollback`** is the user-confirmed counterpart.
 - **`blocker-protocol`** → classification taxonomy + writing `blocked` to a track's `_STATUS.json`.
 - **`/commit`** → per-converged-unit commit (it has its own secret scan).
-- **Promote target** → `/audit` (phased `.claude/audits/` plan).
+- **Promote target** → `/audit` (findings doc + tiered remediation; its inline tier hands back to this skill, its track tier scaffolds a `<slug>-remediation` track).
 
 ## Report format (ad-hoc)
 

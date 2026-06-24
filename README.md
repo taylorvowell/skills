@@ -17,10 +17,12 @@ Stack-light by design: it assumes Next.js (App Router) and leans toward Tailwind
 
 ### Start a NEW project
 
-1. Copy `.claude/`, `docs/`, and the root `CLAUDE.md` into your repo root.
-2. Run **`/init-claude`**.
+1. Copy `.claude/` and `docs/` into an empty repo.
+2. Run **`/start`**.
 
-`/init-claude` adopts the opinionated stack (Next 16, TypeScript strict, Tailwind v4, shadcn/ui, CVA) and fills the `CLAUDE.md` template's blanks from the repo, asking you about intent where needed.
+`/start` scaffolds the whole thing: a Turborepo + pnpm monorepo (`apps/web` + shared `packages/`), latest Next.js (App Router), TypeScript strict, Tailwind v4, shadcn/ui + CVA, the `lib/env` split, `components/REGISTRY.md`, gitleaks, and the secret-safety hooks — all grounded in current docs. It authors your `CLAUDE.md` against the real result, rewrites the README to read like a fresh Next.js app, **verifies the shell boots**, records the stack as your first ADR, and writes a living `docs/PROJECT.md` from your project description. At the end you have a running, well-structured shell ready to build on — and it offers to `/brainstorm` your first feature.
+
+> Already scaffolded an app yourself? Use **`/adopt`** instead — it treats your repo as the source of truth and authors the `CLAUDE.md` around what's already there.
 
 > Full install details, settings-merge notes, and lighter-touch options are in [`INSTALL.md`](INSTALL.md).
 
@@ -41,7 +43,7 @@ Stack-light by design: it assumes Next.js (App Router) and leans toward Tailwind
 2. **Plan a feature.** Run **`/plan <what you want to build>`**. Claude clarifies scope with you, breaks the feature into numbered steps each with a concrete verification, scaffolds the track, and adds it to the roadmap. (Use `/architect` first for a big strategic decision; use `/future` to park ideas for later — `/future develop` turns one into a plan when you're ready.)
 3. **Build.** Run `/build` (or `/feature <name>`). Claude executes the current step, runs its verification, updates the progress log, and stops — then recommends the next action and waits. Say **`GO`** and it runs exactly that recommendation; repeat to advance step by step. `/roadmap` shows the arc; `/status` shows the detail. Need to add something mid-track? `/plan add-step <track> <what>`.
 4. **Commit.** Run `/commit`. Claude will commit and push after performing safety checks and key leak prevention, including description of what was completed.
-5. **Keep it healthy.** Reach for `/audit` (architecture & conventions review), `/speedtest` (performance), `/test` and `/e2e` (correctness), `/security` (when touching auth, secrets, or external input), and `/debug` when something breaks at runtime.
+5. **Keep it healthy.** Reach for `/audit` (architecture & conventions review), `/speedtest` (performance), `/test` and `/e2e` (correctness), the `security` skill (when touching auth, secrets, or external input), and `/debug` when something breaks at runtime.
 6. **Ship & record.** `/deploy` to a preview or production. Decisions and procedures get written down as ADRs and runbooks automatically (`/document`), so the _why_ survives.
 
 ### The "GO" handoff — how each turn ends
@@ -89,6 +91,8 @@ Work is organized into **tracks**. A track is a self-contained mini-build: a goa
 
 A shipped `example-track` makes these work the moment you install — replace it with your own.
 
+The everyday commands outside the build loop — `/commit`, `/audit`, `/speedtest`, `/test`, `/e2e`, `/debug`, `/deploy`, `/document`, `/heal`, `/improve` — are walked through in **A typical workflow** above; the full list lives in the skills index in `CLAUDE.md`.
+
 ---
 
 ## Repository layout
@@ -114,7 +118,7 @@ INSTALL.md          # full install guide
 
 - **Claude Code** — the skills, commands, and hooks are Claude Code features.
 - **Node.js** on PATH — the hooks are small `.mjs` scripts.
-- Some skills use MCP servers (Playwright, Chrome DevTools, Context7, Vercel) — they degrade gracefully if a server isn't connected; nothing is required for the core build/audit/security skills.
+- Some skills use MCP servers (Playwright, Chrome DevTools, Context7, Next devtools, Vercel) — they degrade gracefully if a server isn't connected; nothing is required for the core build/audit/security skills.
 
 ---
 

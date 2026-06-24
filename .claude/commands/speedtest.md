@@ -19,5 +19,3 @@ The skill, by design:
 - **Won't break the design.** For any approved visual change (contrast, sizing, fonts, layout) it **shows a rendered before/after preview** (with variants for contrast) and confirms before applying. After applying the chosen set it re-audits once to confirm — then stops.
 
 The skill already folds in a read-only static pre-scan (stray `'use client'`, raw `<img>`, missing `sizes`, `useEffect` data fetching, forbidden `tailwind.config.*`, raw `process.env`) as findings in the plan — it doesn't fix them on its own.
-
-For the commit + remote CI gate (push a branch, audit the Vercel preview, post results), use `/commit-and-audit` instead — that's a different, ship-readiness flow.

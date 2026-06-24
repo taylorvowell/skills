@@ -45,7 +45,7 @@ Additionally, the user can invoke `/checkpoint` or `/rollback` directly outside 
 3. **Surface what will be lost.** Run `git log --oneline <chosen-tag>..HEAD` and show the user every commit that rollback will discard. If there are uncommitted changes (`git status --porcelain` non-empty), show those too. State explicitly: "This will discard N commits and any uncommitted changes."
 4. **Require explicit confirmation.** The user must type a clear yes (the AskUserQuestion tool with a confirm option is the right pattern). Do NOT accept implicit signals.
 5. **Run the reset.** `git reset --hard <tag>`. This is the destructive step.
-6. **Update `_STATUS.json`** via `progress-tracker`'s RESET STEP operation: every step that was completed *after* the checkpoint's step number must go back to `not-started`. The checkpoint's own step becomes `currentStep`.
+6. **Update `_STATUS.json`** via `progress-tracker`'s RESET STEP operation: every step numbered *after* the checkpoint's step whose status is not already `not-started` — whether `completed`, `in-progress`, `blocked`, or `skipped` — goes back to `not-started`, and its matching entries in `blockers[]` / `skipped[]` are removed (that step's code no longer exists after the reset). The checkpoint's own step becomes `currentStep`.
 7. **Append to `_PROGRESS.md`** a rollback entry: which tag was restored, which commits were discarded, which step the build is now at.
 8. **Report to the user** the new HEAD, the new current step, and confirm they're ready to resume.
 

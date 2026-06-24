@@ -31,11 +31,12 @@ Copy `docs/` in alongside `.claude/` — the `docs` and `architect` skills copy 
 
 **Skill categories** (each is a folder under `.claude/skills/` with a `SKILL.md`):
 
+- **On-ramps & planning:** start, adopt, brainstorm, plan
 - **Build & progress:** build-orchestrator, feature-orchestrator, progress-tracker, roadmap, step-verifier, blocker-protocol, checkpoint, icebox
 - **Quality & security:** audit, security, docs, web-design-guidelines, improve
-- **Next.js / React / styling:** next-best-practices, next-cache-components, component-system, tailwind-v4, shadcn, vercel-react-best-practices, vercel-composition-patterns, vercel-react-view-transitions, web-perf
+- **Next.js / React / styling:** next-best-practices, next-cache-components, component-system, tailwind-v4, shadcn, vercel-react-best-practices, vercel-composition-patterns, vercel-react-view-transitions
 - **Testing:** test-orchestrator, e2e-autopilot, heal
-- **Performance:** lighthouse-optimize, vercel-optimize
+- **Performance:** lighthouse-optimize, web-perf, vercel-optimize
 - **Deploy:** deploy-to-vercel, vercel-cli, vercel-cli-with-tokens
 - **Architecture / debugging / authoring:** architect, debug, skill-creator
 
@@ -47,13 +48,14 @@ Copy `docs/` in alongside `.claude/` — the `docs` and `architect` skills copy 
 
 ## Install A — a NEW Next.js project
 
-1. Copy `.claude/`, `docs/`, and the root `CLAUDE.md` into your repo root.
-2. **Run `/init-claude`.** Claude researches the repo (package manager, framework versions, directory layout, configs, CI, deploy target), fills every **🔧 FILL IN** placeholder in `CLAUDE.md`, reconciles the stack rules with what's actually installed, and asks you about the things code can't reveal (the North Star, ranked priorities, domain rules). Review and tweak the result.
-   - You can also do step 2 by hand: open `CLAUDE.md` and fill the 🔧 sections yourself.
-3. (Optional) Delete the shipped `example-track` once you add real tracks; replace `.claude/ROADMAP.json`'s example track with your own.
-4. Start working. `/roadmap`, `/build`, `/audit`, `/speedtest`, etc. work immediately.
+1. Copy `.claude/` and `docs/` into an **empty** repo. (You don't need the starter `CLAUDE.md` — `/start` authors one against the real result; copy it too only if you want the template on hand.)
+2. **Run `/start`.** Claude scaffolds the whole project: a Turborepo + pnpm monorepo (`apps/web` + shared `packages/`), latest Next.js (App Router), TypeScript strict, Tailwind v4, shadcn/ui + CVA, the `lib/env` split, `components/REGISTRY.md`, gitleaks, and the secret-safety hooks — all grounded in current docs. It then authors `CLAUDE.md` against what it built, rewrites the README to read like a fresh Next.js app, **verifies the shell boots** (`pnpm install` + typecheck + lint + build), records the stack as your first ADR (`docs/decisions/0001-…`), and writes a living `docs/PROJECT.md` from your project description.
+3. **Describe your project** when asked — this seeds `docs/PROJECT.md` (the living overview, kept current by `/plan` and `/build`) and the CLAUDE.md `Project` / North Star sections.
+4. `/start` offers to kick off `/brainstorm` for your first feature. From there: `/brainstorm` → `/plan` → `/build`.
 
-> **The `CLAUDE.md` structure** mirrors a proven layout: a `Project` blurb, a **North Star & Operating Principles — READ FIRST** section (the quality bar + ranked priorities that break ties), `Stack` / `Structure` / `Architecture Flow`, then the hard rules (`TypeScript`, `Tailwind v4 — CRITICAL`, `Components — STRICT RULES`, `CVA`, `Next.js`, `Environment Variables — SAFETY CRITICAL`, `File Safety`, `Performance`, `Testing`, a `Don't` list), a documentation-currency rule, the build-system section, MCP routing, and per-subsystem `Domain Rules`. `/init-claude` keeps that structure and fills it with your project's facts.
+> **Already scaffolded the app yourself?** Use **`/adopt`** instead (Install B) — it treats your repo as the source of truth and authors the `CLAUDE.md` around what's already there, without scaffolding anything.
+
+> **The `CLAUDE.md` structure** mirrors a proven layout: a `Project` blurb, a **North Star & Operating Principles — READ FIRST** section (the quality bar + ranked priorities that break ties), `Stack` / `Structure` / `Architecture Flow`, then the hard rules (`TypeScript`, `Tailwind v4 — CRITICAL`, `Components — STRICT RULES`, `CVA`, `Next.js`, `Environment Variables — SAFETY CRITICAL`, `File Safety`, `Performance`, `Testing`, a `Don't` list), a documentation-currency rule, the build-system section, MCP routing, and per-subsystem `Domain Rules`. `/start` and `/adopt` keep that structure and fill it with your project's facts.
 
 You can delete `CLAUDE.add.md` and `INSTALL.md` from the project — they're only needed for distribution.
 
@@ -73,8 +75,8 @@ You can delete `CLAUDE.add.md` and `INSTALL.md` from the project — they're onl
 
 | You have… | Run | What it does |
 |-----------|-----|--------------|
-| A new / greenfield project | `/init-claude` | Adopts the opinionated stack; fills the template's blanks from the repo. |
-| An existing project with its own setup | `/adopt` | Keeps your stack & conventions; wraps the toolkit around them and restructures `CLAUDE.md` into the proven format. |
+| An **empty** repo (greenfield) | `/start` | Scaffolds the whole opinionated stack (Turborepo + pnpm monorepo, latest Next.js, Tailwind v4, shadcn/CVA, gitleaks), verifies it boots, and authors `CLAUDE.md` + a living `docs/PROJECT.md`. |
+| An **existing** project (its own setup, or one you scaffolded yourself) | `/adopt` | Keeps your stack & conventions; wraps the toolkit around them and authors/restructures `CLAUDE.md` into the proven format. |
 
 ## The hooks (what they enforce)
 

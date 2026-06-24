@@ -32,7 +32,7 @@ indexed by `.claude/ROADMAP.json` and advanced one verified step at a time.
   entirely if you don't want a tracked build; the rest of the skills work standalone.
 
 **Skills — reach for the right one** (in `.claude/skills/`, triggered by their descriptions):
-- Quality & security: `/audit`, `/audit-task`, `security`, `web-design-guidelines`, `/document`, `/improve`.
+- Quality & security: `/audit` (self-aware — recent work, a target, or a just-finished feature; post-build pass adds security + hardening lenses and routes fixes through `/heal` or a `<slug>-remediation` track), `security`, `web-design-guidelines`, `/document`, `/improve`.
 - Next.js / React / styling: `next-best-practices`, `next-cache-components`, `component-system`,
   `tailwind-v4`, `shadcn`, `vercel-react-best-practices`, `vercel-composition-patterns`, `vercel-react-view-transitions`.
   (Use these only where they match this project — e.g. skip `tailwind-v4` if the project is on Tailwind v3 or another CSS approach.)

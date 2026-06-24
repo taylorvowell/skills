@@ -13,4 +13,4 @@ The skill will:
 
 Don't start grepping memory or `CLAUDE.md` before invoking the skill — it runs its own evidence-gathering and dedupe steps in order. Going in cold wastes context.
 
-This is for capturing *friction that already happened* and fixing the knowledge gap that caused it. For an architectural review of code just written, use `/audit` / `/audit-task`. For deliberately documenting a decision you set out to make, use `/document` / the `docs` skill.
+This is for capturing *friction that already happened* and fixing the knowledge gap that caused it. For an architectural review of code just written, use `/audit` (it will confirm it's reviewing your recent work). For deliberately documenting a decision you set out to make, use `/document` / the `docs` skill.

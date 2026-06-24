@@ -1,6 +1,6 @@
 # CLAUDE.md — <Project Name>
 
-> **Starter for a NEW Next.js project.** This mirrors a proven CLAUDE.md structure. Sections marked **🔧 FILL IN** are project-specific — run **`/init-claude`** (or paste the bootstrap prompt from `INSTALL.md`) and Claude will research the repo, fill every 🔧 placeholder, reconcile the stack rules with what's actually installed, and ask you about anything it can't infer. The unmarked sections are stack defaults (Next 16 + TypeScript strict + Tailwind v4 + shadcn/ui + CVA) — keep, edit, or delete to taste. Delete this quote block once initialized.
+> **Starter for a NEW Next.js project.** This mirrors a proven CLAUDE.md structure. Sections marked **🔧 FILL IN** are project-specific — running **`/start`** in an empty repo scaffolds the project and fills this file against the real result; for a repo you scaffolded yourself, **`/adopt`** authors it from what's there. Either way Claude fills every 🔧 placeholder, reconciles the stack rules with what's actually installed, and asks you about anything it can't infer. The unmarked sections are stack defaults (Next 16 + TypeScript strict + Tailwind v4 + shadcn/ui + CVA) — keep, edit, or delete to taste. Delete this quote block once initialized.
 
 ## Project
 
@@ -17,7 +17,7 @@
 
 ## Project Structure
 
-> 🔧 FILL IN — Single app or monorepo? List the top-level apps/packages and what each is (e.g. `apps/web — Next.js frontend`, `packages/shared — shared types`). For a single app, note the key top-level dirs (`app/`, `components/`, `lib/`). `/init-claude` detects this from the workspace config and directory tree.
+> 🔧 FILL IN — Single app or monorepo? List the top-level apps/packages and what each is (e.g. `apps/web — Next.js frontend`, `packages/shared — shared types`). For a single app, note the key top-level dirs (`app/`, `components/`, `lib/`). `/start` (or `/adopt`) detects this from the workspace config and directory tree.
 
 ## Architecture Flow
 
@@ -29,7 +29,7 @@
 >
 > Next.js 16 (App Router), TypeScript strict, Tailwind CSS v4, shadcn/ui, CVA. Package manager: **<detected from lockfile>**. Deploy target: Vercel.
 >
-> Add the rest as adopted: database, auth, search, analytics, payments, error monitoring, caching. `/init-claude` reads `package.json` and pins the real versions here.
+> Add the rest as adopted: database, auth, search, analytics, payments, error monitoring, caching. `/start` (or `/adopt`) reads `package.json` and pins the real versions here.
 
 ## Environments & Deploy Targets
 
@@ -118,7 +118,7 @@ The `next-best-practices` and `next-cache-components` skills read the installed 
   - **`lib/env-server.ts` — server (secrets), `server-only`, Zod-validated.** Exports `serverEnv`, validated once at boot. A bad var fails the deploy, not every visitor.
 - NEVER use raw `process.env` outside these two modules. NEVER import the server env module from client code (`'use client'`).
 - NEVER log, print, echo, or expose any environment variable value in output, errors, comments, or responses.
-- NEVER bulk-enumerate env vars or dump secrets via tooling: no `printenv` / bare `env` / `Get-ChildItem env:`; no reading `.env*` (except `.env.example`). Enforced by `permissions.deny` + the `.claude/hooks/guard-secret-exposure.mjs` hook.
+- NEVER bulk-enumerate env vars or dump secrets via tooling: no `printenv` / bare `env` / `Get-ChildItem env:`; no reading `.env*` (except `.env.example`). `printenv` and bare `env` are blocked by `permissions.deny`; the PowerShell `Get-ChildItem env:` form and shell reads of `.env*` are caught by the `.claude/hooks/guard-secret-exposure.mjs` hook (content patterns a static deny rule can't match). The Read/Edit tools are guarded against *writing* secret files by `guard-protected-paths.mjs`; not reading a secret file into the transcript is governed by this rule itself.
 - NEVER write env values into committed files. Only `.env.local` (gitignored) and `.env.example` (empty values only).
 - Server-only secrets (service-role keys, API keys) live in the server module — never in client code, never in the browser bundle.
 
@@ -195,10 +195,10 @@ Never advance without Verification passing. Never edit a `_STATUS.json` / `_PROG
 
 These live in `.claude/skills/` and trigger from their descriptions; this is the fast map.
 
-- **Build & progress:** `/brainstorm <idea>` (flesh out an idea before planning), `/plan <feature>` (plan a new track), `/build`, `/feature <name>`, `/roadmap`, `/status`, `/verify`, `/blocker`, `/checkpoint` + `/rollback`, `/future`.
-- **Quality & security:** `/audit`, `/audit-task`, `security`, `web-design-guidelines`, `/document`, `/improve`.
+- **Build & progress:** `/brainstorm <idea>` (flesh out an idea before planning), `/plan <feature>` (plan a new track), `/build`, `/feature <name>`, `/roadmap`, `/status`, `/verify`, `/blocker`, `/checkpoint` + `/rollback`, `/skip`, `/reset-step`, `/future`.
+- **Quality & security:** `/audit` (self-aware — audits your recent work, a target, or a just-finished feature; the post-build pass adds security + hardening lenses on top of the core axes and routes fixes through `/heal` or a `<slug>-remediation` track), `security`, `web-design-guidelines`, `/document`, `/improve`.
 - **Next.js, React & styling:** `next-best-practices`, `next-cache-components`, `component-system`, `tailwind-v4`, `shadcn`, `vercel-react-best-practices`, `vercel-composition-patterns`, `vercel-react-view-transitions`.
-- **Testing:** `/test`, `/e2e <criteria>`, `/test-write`, `/test-heal`, `/heal`.
-- **Performance & a11y:** `/speedtest`, `web-perf`, `vercel-optimize`.
-- **Deploy:** `/deploy`, `vercel-cli`, `vercel-cli-with-tokens`.
+- **Testing:** `/test`, `/e2e <criteria>`, `/test-write`, `/test-heal`, `/heal`. (`/heal` cleans up the diff you just wrote — types/lint/scoped tests; `/test-heal` repairs one specific failing test.)
+- **Performance & a11y:** `/speedtest` (route audit + fix plan, via `lighthouse-optimize`), `web-perf` (raw Chrome-DevTools trace primitive), `vercel-optimize` (deployed Vercel cost/perf).
+- **Deploy:** `/deploy` → `deploy-to-vercel` (interactive / preview default), `vercel-cli-with-tokens` (token / CI), `vercel-cli` (project management: domains, env, logs).
 - **Architecture / debugging / authoring:** `/architect`, `/architect-deep`, `/debug`, `skill-creator`.

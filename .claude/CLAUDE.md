@@ -3,9 +3,10 @@
 On non-trivial changes during a session, before ending your final response:
 1. If an architectural decision was made (new dependency, new pattern, new service, a "we're going to do X not Y" choice) → draft an ADR using the template at `docs/decisions/_template.md`, save to `docs/decisions/NNNN-kebab-title.md` where NNNN is the next sequential number.
 2. If an operational procedure was created or learned (how to handle X failure, how to roll back Y, how to onboard Z) → draft a runbook using the template at `docs/runbooks/_template.md`, save to `docs/runbooks/kebab-title.md`.
-3. If `.claude/CLAUDE.md` or any per-app CLAUDE.md is now out of date → update it.
-4. For deeper guidance (when to document, when not to, templates), the `docs` skill in `.claude/skills/docs/` is available — load it when doing documentation work.
-5. At the end of your final response, list what was documented or explicitly note "no documentation needed" with one-line reasoning.
+3. If a feature was planned, started, or shipped this session (e.g. via `/plan` or `/build`) and `docs/PROJECT.md` exists → keep that living overview current: move the feature between its **Planned → In progress → Shipped** lists, refresh **Current focus**, and bump the `updated` date. `docs/PROJECT.md` is the project's living description (created by `/start`); it should never drift from what's actually being built.
+4. If `.claude/CLAUDE.md` or any per-app CLAUDE.md is now out of date → update it.
+5. For deeper guidance (when to document, when not to, templates), the `docs` skill in `.claude/skills/docs/` is available — load it when doing documentation work.
+6. At the end of your final response, list what was documented or explicitly note "no documentation needed" with one-line reasoning.
 
 What is NOT worth documenting (skip these):
 - Trivial bug fixes, typo corrections, cosmetic changes
