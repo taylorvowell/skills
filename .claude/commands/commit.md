@@ -1,4 +1,4 @@
-Commit all staged and unstaged changes with a concise conventional commit message.
+Commit all staged and unstaged changes with a concise conventional commit message, then push to the remote.
 
 Steps:
 1. Run `git add -A`

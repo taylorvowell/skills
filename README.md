@@ -78,7 +78,7 @@ A shipped `example-track` makes these work the moment you install — replace it
 1. **Set up.** Run `/adopt` (existing) or `/init-claude` (new). You and Claude agree on the North Star and ranked priorities — the compass for everything after.
 2. **Plan a feature.** Run **`/plan <what you want to build>`**. Claude clarifies scope with you, breaks the feature into numbered steps each with a concrete verification, scaffolds the track, and adds it to the roadmap. (Use `/architect` first for a big strategic decision; use `/future` to park ideas for later — `/future develop` turns one into a plan when you're ready.)
 3. **Build.** Run `/build` (or `/feature <name>`). Claude executes the current step, runs its verification, updates the progress log, and stops — ready for the next `/build`. Repeat. `/roadmap` shows the arc; `/status` shows the detail. Need to add something mid-track? `/plan add-step <track> <what>`.
-4. **Commit.** Run `/commit`. Claude will commit with safety checks and key leak prevention, including description of what was completed.
+4. **Commit.** Run `/commit`. Claude will commit and push after performing safety checks and key leak prevention, including description of what was completed.
 5. **Keep it healthy.** Reach for `/audit` (architecture & conventions review), `/speedtest` (performance), `/test` and `/e2e` (correctness), `/security` (when touching auth, secrets, or external input), and `/debug` when something breaks at runtime.
 6. **Ship & record.** `/deploy` to a preview or production. Decisions and procedures get written down as ADRs and runbooks automatically (`/document`), so the _why_ survives.
 
