@@ -1,125 +1,82 @@
-# Claude Code toolkit for Next.js
+# GO BUILD
 
-A drop-in `.claude/` toolkit that makes Claude Code build Next.js projects the way a well-run team does: a structured `CLAUDE.md`, secret-safety hooks, a library of focused skills, and — the heart of it — a **track-based build system** that plans work, executes it one verified step at a time, and keeps a durable record of the plan and its progress.
+**A fast, friendly way to build Next.js projects with Claude Code.** You bring the idea. GO BUILD turns it into a plan, builds it one checked step at a time, and keeps the whole thing moving with a single word: **GO**.
 
-Stack-light by design: it assumes Next.js (App Router) and leans toward Tailwind v4 + shadcn/ui + CVA, but every skill **adapts to whatever the host project actually uses** — single app or monorepo, any package manager. Nothing is tied to a specific company, database, or host.
+## The six stages
+
+This is the shape of a GO BUILD project. You move through them as you go, and most of the time **GO** is what carries you from one to the next.
+
+**1. Brainstorm** — `/brainstorm <your idea>`
+Got a half-formed idea? Talk it out. Claude fleshes it into a clear concept — what it does, how someone uses it, how it fits what you've already built — and writes it down. Say **GO** to hand it straight to planning.
+
+**2. Plan** — `/plan <what you want>`
+Claude breaks the feature into small, numbered steps, each with a concrete way to know it's done. That becomes a _track_ — a little build plan that lives in your repo.
+
+**3. Build** — `/build`
+Claude does one step, proves it works (typecheck, lint, tests), writes down the progress, and stops. Then it recommends the next step and waits for **GO**. One checked step at a time, so broken work can't quietly pile up.
+
+**4. Check** — `/audit` · `/test` · `/e2e` · `/speedtest` · `/debug`
+Make sure it actually holds up. Review how it's built, run the tests, drive it in a real browser, check the speed, or chase down whatever's broken.
+
+**5. Commit** — `/commit`
+Save your work the safe way. Claude scans for leaked secrets and stray `.env` files first, writes a tidy message, and pushes.
+
+**6. Ship** — `/deploy`
+Push it live — a preview, or production when you're ready. Along the way, decisions and how-tos get written down for you, so future-you remembers _why_.
+
+You don't have to touch all six every time. A tiny change might go build → commit → ship. A big feature walks the whole path. The stages are a rhythm, not a checklist.
 
 ---
 
-## Quick start
+## Get started
 
-### Add it to an EXISTING project
+### Brand-new project
 
-1. Copy `.claude/` (and `docs/` if you don't already have ADR/runbook templates) into your repo root.
-2. Run **`/adopt`**.
-
-`/adopt` researches your repo — package manager, framework versions, your existing conventions, configs, CI, deploy target — then writes a `CLAUDE.md` in the proven structure **populated with your project's real facts**, folding in any `CLAUDE.md`/`AGENTS.md` you already have. It wires in the skills and secret-safety hooks, and asks you about the things code can't reveal (your North Star, your ranked priorities) and any opt-in upgrades. **Your conventions stay authoritative — nothing is overwritten without confirmation.**
-
-### Start a NEW project
-
-1. Copy `.claude/` and `docs/` into an empty repo.
+1. Copy the `.claude/` and `docs/` folders into an empty repo.
 2. Run **`/start`**.
 
-`/start` scaffolds the whole thing: a Turborepo + pnpm monorepo (`apps/web` + shared `packages/`), latest Next.js (App Router), TypeScript strict, Tailwind v4, shadcn/ui + CVA, the `lib/env` split, `components/REGISTRY.md`, gitleaks, and the secret-safety hooks — all grounded in current docs. It authors your `CLAUDE.md` against the real result, rewrites the README to read like a fresh Next.js app, **verifies the shell boots**, records the stack as your first ADR, and writes a living `docs/PROJECT.md` from your project description. At the end you have a running, well-structured shell ready to build on — and it offers to `/brainstorm` your first feature.
+Claude sets up a real, modern Next.js project for you — App Router, TypeScript, Tailwind v4, shadcn/ui — gets it actually running, and writes the project's `CLAUDE.md` (the house rules Claude follows) based on what it built. Then it offers to brainstorm your first feature. From there it's just `/brainstorm` → `/plan` → `/build`.
 
-> Already scaffolded an app yourself? Use **`/adopt`** instead — it treats your repo as the source of truth and authors the `CLAUDE.md` around what's already there.
+### A project you already have
 
-> Full install details, settings-merge notes, and lighter-touch options are in [`INSTALL.md`](INSTALL.md).
+1. Copy `.claude/` (and `docs/`) into your repo.
+2. Run **`/adopt`**.
 
----
+Claude reads your project — your stack, your conventions, your setup — and wraps GO BUILD around _your_ way of doing things. Your rules stay in charge; it just adds the workflow and the safety nets.
 
-## What you get
-
-- **A structured `CLAUDE.md`** — a `READ FIRST` North Star (your quality bar + ranked priorities that break ties), the stack, hard rules (TypeScript, Tailwind, components, env safety), a `Don't` list, and a skills index. It's the always-loaded contract Claude follows.
-- **Secret-safety hooks** (active automatically) — block editing `.env*`/lockfiles, block dumping env vars or reading secret files, and lint each file you touch. All fail-open, so they never wedge your work.
-- **A skill library** — focused capabilities Claude reaches for by intent: audit, security review, performance, testing, deploy, debugging, architecture, and more.
-- **The build system** — the part that makes long projects manageable. ↓
+> More detail, settings notes, and lighter-touch options are in [INSTALL.md](INSTALL.md).
 
 ---
 
-## A typical workflow
+## The commands
 
-1. **Brainstorm it.** Have a feature idea? Run **`/brainstorm <your idea>`**. Claude fleshes it out into a clear, project-aware concept that is documented as a .md — features, how it's used, how it fits the app — and refines it with you. Say **`GO`** and it writes the concept up; say **`GO`** again to hand it straight to planning.
-2. **Plan a feature.** Run **`/plan <what you want to build>`**. Claude clarifies scope with you, breaks the feature into numbered steps each with a concrete verification, scaffolds the track, and adds it to the roadmap. (Use `/architect` first for a big strategic decision; use `/future` to park ideas for later — `/future develop` turns one into a plan when you're ready.)
-3. **Build.** Run `/build` (or `/feature <name>`). Claude executes the current step, runs its verification, updates the progress log, and stops — then recommends the next action and waits. Say **`GO`** and it runs exactly that recommendation; repeat to advance step by step. `/roadmap` shows the arc; `/status` shows the detail. Need to add something mid-track? `/plan add-step <track> <what>`.
-4. **Commit.** Run `/commit`. Claude will commit and push after performing safety checks and key leak prevention, including description of what was completed.
-5. **Keep it healthy.** Reach for `/audit` (architecture & conventions review), `/speedtest` (performance), `/test` and `/e2e` (correctness), the `security` skill (when touching auth, secrets, or external input), and `/debug` when something breaks at runtime.
-6. **Ship & record.** `/deploy` to a preview or production. Decisions and procedures get written down as ADRs and runbooks automatically (`/document`), so the _why_ survives.
+**The everyday loop**
 
-### The "GO" handoff — how each turn ends
+| Command              | What it does                          |
+| -------------------- | ------------------------------------- |
+| `/brainstorm <idea>` | Turn a rough idea into a real concept |
+| `/plan <feature>`    | Break a feature into checkable steps  |
+| `/build`             | Do the next step and prove it works   |
+| `/commit`            | Save and push, secrets-scanned        |
+| `/deploy`            | Put it live                           |
 
-Claude doesn't run ahead. When it finishes a piece of work, it recaps what it did and ends by recommending the single next action it would take. Reply **`GO`** and it runs exactly that recommendation — no need to restate the task. This makes every session a tight loop: Claude proposes, you approve with one word, it executes, then proposes the next move. You set the pace; Claude always knows what's next. (For a `/build` spine step you can also reply **Complete** to do everything except advancing the build.)
+**Keeping track**
 
-The throughline: **the plan and its progress are written down, verified, and resumable** — so a multi-week build stays coherent across many sessions, and any session can be picked up cold.
+| Command           | What it does                      |
+| ----------------- | --------------------------------- |
+| `/roadmap`        | The big picture across everything |
+| `/status`         | Where the current work stands     |
+| `/feature <name>` | Advance a specific piece of work  |
+| `/future`         | Park a "someday" idea for later   |
 
----
+**Keeping it healthy**
 
-## The build system — plan, track, execute
+| Command          | What it does                        |
+| ---------------- | ----------------------------------- |
+| `/audit`         | Review what you built               |
+| `/test` · `/e2e` | Run tests / drive a real browser    |
+| `/speedtest`     | Check performance and accessibility |
+| `/debug`         | Figure out why something's broken   |
+| `/heal`          | Auto-fix what you just broke        |
 
-Work is organized into **tracks**. A track is a self-contained mini-build: a goal, a numbered list of steps, and its own status. The big picture lives in one roadmap; each track tracks its own progress; Claude advances a track **one verified step at a time** and never moves on until the step's checks pass.
-
-```
-.claude/
-├── ROADMAP.json                      # the macro plan: every track, its goal, phase, dependencies
-└── feature-tracks/
-    └── <track-id>/
-        ├── _STATUS.json              # machine-readable progress (which step, done/blocked)
-        ├── _PROGRESS.md              # human-readable log, append-only
-        └── 01 - Title.md, 02 - …     # numbered step files: scope + verification per step
-```
-
-**Why this matters:**
-
-- **Plans are durable.** The roadmap and step files are real files in your repo, versioned in git — not a chat you lose. You can stop, come back next week, and `/roadmap` tells you exactly where you are.
-- **Progress is derived, never faked.** `/roadmap` computes status from each track's `_STATUS.json` — it can't drift from reality.
-- **Every step is verified.** A step isn't "done" until its verification command (typecheck, lint, tests) passes. Broken state can't silently compound across steps.
-- **It documents as it goes.** Decisions become ADRs (`docs/decisions/`), procedures become runbooks (`docs/runbooks/`), and future ideas get parked in a backlog (`docs/icebox/`) instead of lost.
-
-### The commands that drive it
-
-| Command                                                        | What it does                                                                                                                                          |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/brainstorm <idea>`                                           | **Flesh out a raw idea** into a clear, project-aware concept — the step just before planning. On `GO`, writes it up and offers to hand it to `/plan`. |
-| `/plan <feature>`                                              | **Plan a new feature** — decompose it into verified steps and scaffold a track. (`/plan add-step <track> <what>` adds a step to an existing track.)   |
-| `/roadmap`                                                     | The macro picture across all tracks — what's done, active, blocked, next.                                                                             |
-| `/build`                                                       | Advance the **spine** track (your current top priority) by one verified step.                                                                         |
-| `/feature <name>`                                              | Advance any other track by one verified step.                                                                                                         |
-| `/status`                                                      | Where the active track stands.                                                                                                                        |
-| `/verify`                                                      | Run the current step's verification checks.                                                                                                           |
-| `/future` (`/icebox`)                                          | Park a "someday" idea in the backlog without derailing now (`/future develop <id>` turns it into a planned track).                                    |
-| `/blocker`, `/checkpoint`, `/rollback`, `/skip`, `/reset-step` | Handle blockers and safe recovery points.                                                                                                             |
-
-A shipped `example-track` makes these work the moment you install — replace it with your own.
-
-The everyday commands outside the build loop — `/commit`, `/audit`, `/speedtest`, `/test`, `/e2e`, `/debug`, `/deploy`, `/document`, `/heal`, `/improve` — are walked through in **A typical workflow** above; the full list lives in the skills index in `CLAUDE.md`.
-
----
-
-## Repository layout
-
-```
-.claude/
-├── skills/         # the skill library
-├── commands/       # slash commands that route into the skills
-├── hooks/          # 3 secret-safety / lint hooks
-├── settings.json   # wires the hooks + secret-protection rules
-├── ROADMAP.json    # build-system macro plan (ships with one example track)
-├── feature-tracks/ # one folder per track
-├── ai-instructions/# step-file template & build conventions
-├── audits/         # output of /audit   ·   architecture/ → output of /architect   ·   improvements/ → /improve ledger
-└── CLAUDE.md       # generic working-style conventions
-docs/               # ADR + runbook templates (docs/decisions, docs/runbooks)
-CLAUDE.md           # opinionated starter for a NEW project
-CLAUDE.add.md       # additive bolt-on block for an EXISTING project (manual alternative to /adopt)
-INSTALL.md          # full install guide
-```
-
-## Requirements
-
-- **Claude Code** — the skills, commands, and hooks are Claude Code features.
-- **Node.js** on PATH — the hooks are small `.mjs` scripts.
-- Some skills use MCP servers (Playwright, Chrome DevTools, Context7, Next devtools, Vercel) — they degrade gracefully if a server isn't connected; nothing is required for the core build/audit/security skills.
-
----
-
-Built to be cloned, copied, and made your own. Prune skills you won't use, edit the rules to match your stack, and add tracks as your project grows.
+Ah see
